@@ -1169,7 +1169,6 @@
   }
 
   function renderDishScreen(el){
-    var ingredients = state.nutrition.ingredients;
     el.innerHTML =
       '<button type="button" class="back-link" data-action="dish-back-to-diet">← Volver a la dieta</button>' +
       '<div class="view-head"><h1>'+(dishBuilder.editingId?'Editar plato':'Nuevo plato')+'</h1></div>' +
@@ -1188,16 +1187,10 @@
           '<button type="button" class="btn btn-sm btn-ghost" data-action="toggle-new-ingredient-form">+ Crear ingrediente nuevo</button>' +
         '</div>' +
         '<div id="newIngredientForm"></div>' +
-        '<div class="field-actions">' +
+        '<div class="field-actions" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border-soft);">' +
           '<button type="button" class="btn btn-primary" data-action="save-dish">'+(dishBuilder.editingId?'Guardar cambios':'Guardar plato')+'</button>' +
           '<button type="button" class="btn btn-ghost" data-action="dish-back-to-diet">Cancelar</button>' +
         '</div>' +
-        (ingredients.length ? '<div class="subtle-panel"><h2 class="tight" style="font-size:13px;">Ingredientes disponibles</h2>' +
-          '<div class="table-wrap"><table><thead><tr><th>Nombre</th><th></th></tr></thead><tbody>' +
-          ingredients.map(function(i){
-            return '<tr><td>'+esc(i.name)+'</td>' +
-              '<td class="entry-actions"><button class="btn-icon" data-action="edit-ingredient-start" data-id="'+i.id+'">✎</button><button class="btn-icon" data-action="delete-ingredient" data-id="'+i.id+'">×</button></td></tr>';
-          }).join('') + '</tbody></table></div></div>' : '') +
       '</div>';
     renderDishRows();
     renderNewIngredientForm();
