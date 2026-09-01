@@ -219,6 +219,7 @@
   .dish-thumb{width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0;}
 
   .ingredient-row-form{display:grid;grid-template-columns:1.4fr 64px 58px 40px;gap:8px;align-items:center;margin-bottom:8px;}
+  .ingredient-row-form-add{grid-template-columns:1.4fr 64px 58px auto;}
   .ing-remove{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;}
   .ing-remove:hover{color:var(--danger);}
   .dish-totals-preview{font-family:var(--font-mono);font-size:12px;color:var(--accent);margin:8px 0 14px;padding:10px 14px;background:var(--accent-soft-2);border-radius:var(--radius-sm);border:1px solid var(--border);}
@@ -1283,7 +1284,7 @@
         var ingOptions = ingredients.map(function(i){ return '<option value="'+i.id+'">'+esc(i.name)+'</option>'; }).join('');
         looseFormHtml = '<div class="subtle-panel loose-ing-form">' +
           (ingredients.length ?
-            '<div class="ingredient-row-form" style="margin-bottom:0;">' +
+            '<div class="ingredient-row-form ingredient-row-form-add" style="margin-bottom:0;">' +
               '<select id="looseIngSelect-'+idx+'">'+ingOptions+'</select>' +
               '<input type="number" min="0" step="1" id="looseIngQty-'+idx+'" value="100">' +
               '<select id="looseIngUnit-'+idx+'"><option value="g">g</option><option value="u">ud</option></select>' +
