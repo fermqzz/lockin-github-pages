@@ -249,7 +249,7 @@
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--surface-2);
     border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:999px;
     font-family:var(--font-mono);font-size:12.5px;z-index:100;box-shadow:var(--glow);}
-  @media (max-width:880px){ .toast{ bottom:calc(78px + env(safe-area-inset-bottom)); } }
+  @media (max-width:880px){ .toast{ bottom:calc(88px + env(safe-area-inset-bottom)); } }
 
   /* ---------- back link (drill-down screens) ---------- */
   .back-link{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--text-dim);
@@ -342,11 +342,13 @@
     .app{flex-direction:column;}
     .main-wrap{order:1;flex:1;min-height:0;}
     .sidebar{
-      order:2;flex-shrink:0;width:100%;height:auto;overflow-y:visible;
+      order:2;flex-shrink:0;width:auto;height:auto;overflow-y:visible;
       flex-direction:row;
-      padding:6px max(16px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-      gap:0;border-right:none;border-top:1px solid var(--border);
+      margin:0 max(10px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      padding:6px 10px;
+      gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);
       background:rgba(15,16,14,0.92);backdrop-filter:blur(6px);
+      box-shadow:0 10px 28px rgba(0,0,0,0.4);
     }
     .brand{display:none;}
     .sidebar-foot{display:none;}
