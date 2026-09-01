@@ -287,6 +287,8 @@
   .dish-view-ings{display:flex;flex-direction:column;gap:2px;}
   .dish-view-ing-row{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--text-muted);}
   .dish-view-ing-qty{font-family:var(--font-mono);color:var(--text-dim);flex-shrink:0;white-space:nowrap;}
+  .dish-view-card-loose .dish-view-body{padding:10px 12px;}
+  .dish-view-card-loose .dish-view-ing-row{font-size:13px;color:var(--text-muted);}
 
   /* ---------- training: calendar ---------- */
   .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
@@ -1093,6 +1095,15 @@
     var mealsHtml = (menu.meals||[]).map(function(meal){
       var dishes = (meal.dishIds||[]).map(function(id){ return getDish(id); }).filter(Boolean);
       var dishesHtml = dishes.length ? '<div class="dish-view-grid">' + dishes.map(function(d){
+        if (d.isLoose){
+          var loIt = (d.items||[])[0];
+          var loIng = loIt && getIngredient(loIt.ingredientId);
+          return '<div class="dish-view-card dish-view-card-loose">' +
+            '<div class="dish-view-body">' +
+              '<div class="dish-view-ing-row"><span>'+esc(loIng?loIng.name:d.name)+'</span><span class="dish-view-ing-qty">'+(loIt?loIt.quantity:'')+(loIt&&loIt.unit==='u'?' ud':' g')+'</span></div>' +
+            '</div>' +
+          '</div>';
+        }
         var ingsHtml = (d.items||[]).map(function(it){
           var ing = getIngredient(it.ingredientId);
           return '<div class="dish-view-ing-row"><span>'+esc(ing?ing.name:'—')+'</span><span class="dish-view-ing-qty">'+it.quantity+(it.unit==='u'?' ud':' g')+'</span></div>';
@@ -1498,7 +1509,7 @@
       var unit = (document.getElementById('looseIngUnit-'+loIdx2)||{}).value || 'g';
       var ing = getIngredient(ingId);
       var newDishId = uid();
-      state.nutrition.dishes.push({id:newDishId, name: ing?ing.name:'Ingrediente', photo:null, items:[{ingredientId:ingId, quantity:qty, unit:unit}]});
+      state.nutrition.dishes.push({id:newDishId, name: ing?ing.name:'Ingrediente', photo:null, isLoose:true, items:[{ingredientId:ingId, quantity:qty, unit:unit}]});
       var looseMeal = activeMenu().meals[loIdx2];
       looseMeal.dishIds.push(newDishId);
       dietsUI.looseFormMealIdx = null;
