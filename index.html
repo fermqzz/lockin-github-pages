@@ -480,12 +480,20 @@
   var LS_KEY = 'fosforo-state-v1';
   var stateScriptEl = document.getElementById('app-state');
   var state = null;
+  /* localStorage holds this device's live data and must win over the state
+     embedded in the HTML — that embedded copy is only a frozen snapshot from
+     whenever this file was last generated/committed (e.g. on GitHub Pages,
+     where there is no artifact-publish step to keep it fresh), so trusting it
+     first was silently reverting local edits every time the page loaded. */
   try {
-    var embedded = JSON.parse(stateScriptEl.textContent || '{}');
-    if (embedded && embedded.training && embedded.nutrition) state = embedded;
+    var ls = localStorage.getItem(LS_KEY);
+    if (ls) state = JSON.parse(ls);
   } catch(e){}
   if (!state){
-    try { var ls = localStorage.getItem(LS_KEY); if (ls) state = JSON.parse(ls); } catch(e){}
+    try {
+      var embedded = JSON.parse(stateScriptEl.textContent || '{}');
+      if (embedded && embedded.training && embedded.nutrition) state = embedded;
+    } catch(e){}
   }
   if (!state) state = defaultState();
   /* Migrate the old combined weight+goal+calories log into three independent
@@ -578,18 +586,11 @@
   function cloneMenus(menus){ return menus.map(function(mn){ return {id:mn.id, name:mn.name, meals: mn.meals.map(function(m){ return {id:m.id, name:m.name, photo:m.photo, dishIds:m.dishIds.slice()}; })}; }); }
   dietBuilder = newDietBuilder();
 
-  /* Saving (persist()) republishes the artifact, and that reloads this page —
-     without this, the reload would drop you back to the default screen every
-     time you save something. Restore exactly where you were. */
-  if (state._ui){
-    try{
-      if (state._ui.route) route = state._ui.route;
-      if (state._ui.ui) Object.assign(ui, state._ui.ui);
-      if (state._ui.dishBuilder) dishBuilder = state._ui.dishBuilder;
-      if (state._ui.dietBuilder) dietBuilder = state._ui.dietBuilder;
-      if (state._ui.dietsUI) dietsUI = state._ui.dietsUI;
-    } catch(e){}
-  }
+  /* Deliberately NOT restoring route/ui/dishBuilder/dietBuilder/dietsUI from
+     state._ui here: on GitHub Pages every open of the app (tapping the home-
+     screen icon, refreshing) is a fresh page load with no in-session reload
+     to recover from, so each launch should start clean on the Entreno tab
+     like a real app's home screen — only the underlying data persists. */
 
   /* ============================= computed helpers ============================= */
   function getType(id){ return state.training.types.find(function(t){return t.id===id;}); }
