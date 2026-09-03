@@ -188,6 +188,17 @@
   .entry-row .entry-metric{font-family:var(--font-mono);color:var(--text-muted);font-variant-numeric:tabular-nums;}
   .entry-actions{display:flex;gap:2px;justify-content:flex-end;}
 
+  .day-entry-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);margin-bottom:10px;}
+  .day-entry-card .dot{width:14px;height:14px;flex-shrink:0;}
+  .day-entry-card-body{flex:1;min-width:0;}
+  .day-entry-card-type{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);}
+  .day-entry-card-name{font-size:17px;font-weight:600;color:var(--text);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .day-entry-card-actions{display:flex;gap:2px;flex-shrink:0;}
+  .day-add-entry-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:16px;border:1px dashed var(--border);border-radius:var(--radius);background:transparent;
+    color:var(--accent);font-family:var(--font-display);font-size:17px;font-weight:700;cursor:pointer;margin-top:6px;}
+  .day-add-entry-btn:hover{border-color:var(--accent);background:var(--accent-soft-2);}
+
   table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
   th{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
   td{padding:9px 10px;border-bottom:1px solid var(--border-soft);color:var(--text-muted);}
@@ -572,7 +583,8 @@
     editingIngredientId:null,
     showNewIngredientForm:false,
     trainingCalMonth: todayStr().slice(0,7),   // 'YYYY-MM'
-    trainingSelectedDate: todayStr(),
+    trainingSelectedDate: null,                // null = land on the bare calendar, not today's day-detail modal
+    showAddEntry: false,
     mainScrollTop: 0
   };
   var dishBuilder = { editingId:null, name:'', photo:null, items:[] };       // items: {ingredientId, quantity, unit}
@@ -770,35 +782,42 @@
     state.training.entries.forEach(function(e){ (byDate[e.date] = byDate[e.date] || []).push(e); });
     var dayList = (byDate[ui.trainingSelectedDate]||[]).slice();
     var editEntry = ui.editingEntryId ? dayList.find(function(e){return e.id===ui.editingEntryId;}) : null;
+    var showForm = !!editEntry || ui.showAddEntry;
     var html = '<h2 class="tight">'+fmtLong(ui.trainingSelectedDate)+'</h2>';
     if (dayList.length){
-      html += '<div class="table-wrap">' + dayList.map(function(e){
+      html += dayList.map(function(e){
         var t = getType(e.typeId); var color = t?t.color:'#666';
-        return '<div class="entry-row" style="grid-template-columns:10px 130px 1fr 60px;min-width:320px;">' +
+        return '<div class="day-entry-card">' +
           '<span class="dot" style="background:'+color+';color:'+color+'"></span>' +
-          '<span>'+esc(t?t.name:'—')+'</span>' +
-          '<span class="entry-notes">'+esc(e.name||'')+'</span>' +
-          '<span class="entry-actions">' +
+          '<div class="day-entry-card-body">' +
+            '<div class="day-entry-card-type">'+esc(t?t.name:'—')+'</div>' +
+            '<div class="day-entry-card-name">'+esc(e.name||'—')+'</div>' +
+          '</div>' +
+          '<span class="day-entry-card-actions">' +
             '<button class="btn-icon" data-action="edit-entry-start" data-id="'+e.id+'" title="Editar">✎</button>' +
             '<button class="btn-icon" data-action="delete-entry" data-id="'+e.id+'" title="Eliminar">×</button>' +
           '</span>' +
         '</div>';
-      }).join('') + '</div>';
-    } else if (!editEntry) {
+      }).join('');
+    } else if (!showForm) {
       html += '<div class="empty-state">Sin entrenos este día.</div>';
     }
-    html +=
-      (editEntry?'<div class="editing-banner">Editando entreno</div>':'') +
-      '<form data-form="entry-form" class="form-grid" style="margin-top:14px;">' +
-        '<input type="hidden" name="editingId" value="'+(editEntry?editEntry.id:'')+'">' +
-        '<input type="hidden" name="date" value="'+ui.trainingSelectedDate+'">' +
-        '<label class="field"><span>Tipo</span><select name="typeId" required>'+ typeOptionsWithSelected(types, editEntry?editEntry.typeId:null) +'</select></label>' +
-        '<label class="field field-wide"><span>Nombre del entreno</span><input type="text" name="name" required placeholder="p. ej. Piernas pesado, Rodaje suave…" value="'+esc(editEntry?editEntry.name||'':'')+'"></label>' +
-        '<div class="field-actions">' +
-          '<button type="submit" class="btn btn-primary">'+(editEntry?'Guardar cambios':'+ Añadir entreno')+'</button>' +
-          (editEntry?'<button type="button" class="btn btn-ghost" data-action="cancel-edit-entry">Cancelar</button>':'') +
-        '</div>' +
-      '</form>';
+    if (showForm){
+      html +=
+        (editEntry?'<div class="editing-banner">Editando entreno</div>':'') +
+        '<form data-form="entry-form" class="form-grid" style="margin-top:14px;">' +
+          '<input type="hidden" name="editingId" value="'+(editEntry?editEntry.id:'')+'">' +
+          '<input type="hidden" name="date" value="'+ui.trainingSelectedDate+'">' +
+          '<label class="field"><span>Tipo</span><select name="typeId" required>'+ typeOptionsWithSelected(types, editEntry?editEntry.typeId:null) +'</select></label>' +
+          '<label class="field field-wide"><span>Nombre del entreno</span><input type="text" name="name" required placeholder="p. ej. Piernas pesado, Rodaje suave…" value="'+esc(editEntry?editEntry.name||'':'')+'"></label>' +
+          '<div class="field-actions">' +
+            '<button type="submit" class="btn btn-primary">'+(editEntry?'Guardar cambios':'+ Añadir entreno')+'</button>' +
+            '<button type="button" class="btn btn-ghost" data-action="cancel-entry-form">Cancelar</button>' +
+          '</div>' +
+        '</form>';
+    } else {
+      html += '<button type="button" class="day-add-entry-btn" data-action="show-add-entry">+ Añadir entreno</button>';
+    }
     return html;
   }
 
@@ -1350,7 +1369,7 @@
 
   document.addEventListener('keydown', function(e){
     if (e.key==='Escape' && ui.trainingSelectedDate){
-      ui.trainingSelectedDate = null; ui.editingEntryId = null; renderMain();
+      ui.trainingSelectedDate = null; ui.editingEntryId = null; ui.showAddEntry = false; renderMain();
     }
     if (e.key==='Escape' && dietsUI.viewDietId){
       dietsUI.viewDietId = null; renderMain();
@@ -1359,7 +1378,7 @@
 
   document.addEventListener('click', function(e){
     if (e.target.classList && e.target.classList.contains('modal-overlay')){
-      if (ui.trainingSelectedDate){ ui.trainingSelectedDate = null; ui.editingEntryId = null; }
+      if (ui.trainingSelectedDate){ ui.trainingSelectedDate = null; ui.editingEntryId = null; ui.showAddEntry = false; }
       if (dietsUI.viewDietId){ dietsUI.viewDietId = null; }
       renderMain(); return;
     }
@@ -1374,12 +1393,14 @@
     if (a==='cal-select-day'){
       ui.trainingSelectedDate = btn.dataset.date;
       ui.editingEntryId = null;
+      ui.showAddEntry = false;
       renderMain(); return;
     }
-    if (a==='close-day-modal'){ ui.trainingSelectedDate = null; ui.editingEntryId = null; renderMain(); return; }
+    if (a==='close-day-modal'){ ui.trainingSelectedDate = null; ui.editingEntryId = null; ui.showAddEntry = false; renderMain(); return; }
 
+    if (a==='show-add-entry'){ ui.showAddEntry = true; ui.editingEntryId = null; renderMain(); return; }
     if (a==='edit-entry-start'){ ui.editingEntryId = id; renderMain(); return; }
-    if (a==='cancel-edit-entry'){ ui.editingEntryId = null; renderMain(); return; }
+    if (a==='cancel-entry-form'){ ui.editingEntryId = null; ui.showAddEntry = false; renderMain(); return; }
     if (a==='delete-entry'){ state.training.entries = state.training.entries.filter(function(x){return x.id!==id;}); persist(); toast('Entreno eliminado'); return; }
 
     if (a==='edit-type-start'){ ui.editingTypeId = id; renderMain(); return; }
@@ -1569,6 +1590,7 @@
       } else {
         entry.id = uid(); state.training.entries.push(entry); toast('Entreno añadido');
       }
+      ui.showAddEntry = false;
       persist(); return;
     }
 
