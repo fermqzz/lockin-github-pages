@@ -619,7 +619,7 @@
   function setSyncStatus(s){
     syncStatus = s;
     renderSyncButton();
-    if (ui.showSyncModal) renderSyncModal();
+    if (typeof ui!=='undefined' && ui && ui.showSyncModal) renderSyncModal();
   }
 
   function cloudPull(pin){
@@ -711,8 +711,6 @@
         '</div>' +
       '</div>';
   }
-
-  if (sb && syncPin) connectPin(syncPin);
 
   /* ============================= route & transient ui state ============================= */
   var route = {section:'training'};
@@ -1834,6 +1832,12 @@
   /* ============================= boot ============================= */
   renderAll();
   renderSyncButton();
+  /* Auto-reconnect happens down here, after ui/route/render are all set up —
+     connectPin() touches ui.showSyncModal, which doesn't exist yet any earlier
+     in the script (that's what was crashing the whole boot sequence before a
+     single frame could render). Doing it last also means the page always
+     paints the local data instantly, then reconciles with the cloud. */
+  if (sb && syncPin) connectPin(syncPin);
   /* Restore the scroll position captured right before the last save, so the
      reload that follows a publish lands back where the user was instead of
      snapping the view to the top. */
